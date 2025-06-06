@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Pedir Ajuda</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #001f3f, #001a35); /* azul marinho escuro */
+      color: #ffeb3b; /* amarelo */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+    }
+
+    h1 {
+      font-weight: 600;
+      font-size: 3rem;
+      margin-bottom: 0.5rem;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.7);
+    }
+
+    p {
+      font-weight: 400;
+      font-size: 1.25rem;
+      margin-bottom: 2rem;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.7);
+    }
+
+    #lista-nomes {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+      max-width: 600px;
+    }
+
+    .nome-btn {
+      background-color: #ffeb3b; /* amarelo */
+      color: #001f3f; /* azul marinho */
+      border: none;
+      padding: 15px 40px;
+      font-size: 1.25rem;
+      font-weight: 600;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(255, 235, 59, 0.6);
+      transition: all 0.3s ease;
+      min-width: 140px;
+      user-select: none;
+    }
+
+    .nome-btn:hover,
+    .nome-btn:focus {
+      background-color: #fff176; /* amarelo mais claro */
+      box-shadow: 0 6px 20px rgba(255, 241, 118, 0.9);
+      outline: none;
+      transform: translateY(-3px);
+    }
+
+    @media (max-width: 480px) {
+      #lista-nomes {
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .nome-btn {
+        width: 100%;
+        min-width: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Precisa de ajuda?</h1>
+  <p>Escolha seu nome para enviar o pedido</p>
+  <div id="lista-nomes"></div>
+
+  <script>
+    const nomes = ['Fernanda', 'Luiza', 'Peterson', 'Marcus'];
+    const listaNomesDiv = document.getElementById('lista-nomes');
+
+    nomes.forEach(nome => {
+      const btn = document.createElement('button');
+      btn.textContent = nome;
+      btn.className = 'nome-btn';
+      btn.onclick = () => pedirAjuda(nome);
+      listaNomesDiv.appendChild(btn);
+    });
+
+    function pedirAjuda(nome) {
+      fetch('https://script.google.com/macros/s/AKfycbzvzVi3yG-6YgeAe98yr-8FTq3xdB5Tt-YgbB8nF8oYMK0EDTRGmqD1QRvq8XuUvCvp/exec', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `nome=${encodeURIComponent(nome)}`
+      })
+      .then(response => response.text())
+      .then(() => alert(`Pedido enviado com sucesso! (${nome})`))
+      .catch(() => alert("Erro ao enviar o pedido."));
+    }
+  </script>
+</body>
+</html>

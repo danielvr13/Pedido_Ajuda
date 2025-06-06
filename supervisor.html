@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Painel do Supervisor</title>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #001f3f, #001a35); /* azul marinho escuro */
+      color: #ffeb3b;
+      padding: 20px;
+      text-align: center;
+    }
+    h1 {
+      margin-bottom: 30px;
+    }
+    table {
+      width: 80%;
+      margin: auto;
+      border-collapse: collapse;
+      background: linear-gradient(135deg, #001f3f, #001a35); /* azul marinho escuro */
+    }
+    th, td {
+      padding: 12px;
+      border: 1px solid #ffc107;
+    }
+    th {
+      background: linear-gradient(135deg, #001f3f, #001a35); /* azul marinho escuro */
+    }
+    tr:nth-child(even) {
+      background: linear-gradient(135deg, #001f3f, #001a35); /* azul marinho escuro */
+    }
+    button {
+      background-color: #ffeb3b;
+      color: #0b1a2d;
+      padding: 6px 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>📋 Pedidos de ajuda</h1>
+
+  <audio id="notificacaoSom" src="https://www.myinstants.com/media/sounds/bell.mp3" preload="auto"></audio>
+
+  <table id="tabela">
+    <thead>
+      <tr>
+        <th>Nome</th>
+        <th>Horário</th>
+        <th>Ação</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    const url = 'https://script.google.com/macros/s/AKfycbzvzVi3yG-6YgeAe98yr-8FTq3xdB5Tt-YgbB8nF8oYMK0EDTRGmqD1QRvq8XuUvCvp/exec';
+
+    let pedidosAnteriores = [];
+
+    function notificarVisualmente(titulo, corpo) {
+      if (Notification.permission === 'granted') {
+        new Notification(titulo, { body: corpo });
+      } else if (Notification.permission !== 'denied') {
+        Notification.requestPermission().then(permission => {
+          if (permission === 'granted') {
+            new Notification(titulo, { body: corpo });
+          }
+        });
+      }
+    }
+
+    function carregarPedidos() {
+      fetch(url)
+        .then(res => res.json())
+        .then(dados => {
+          const corpo = document.querySelector("#tabela tbody");
+          corpo.innerHTML = "";
+
+          const novosPedidos = dados.length > pedidosAnteriores.length;
+          const primeiroCarregamentoComPedidos = pedidosAnteriores.length === 0 && dados.length > 0;
+
+          if (novosPedidos || primeiroCarregamentoComPedidos) {
+            const ultimo = dados[dados.length - 1];
+            document.getElementById("notificacaoSom").play();
+            notificarVisualmente("🆘 Novo Pedido de Ajuda", `${ultimo.nome} pediu ajuda!`);
+          }
+
+          pedidosAnteriores = dados;
+
+          dados.forEach((item, index) => {
+            const linha = document.createElement("tr");
+            linha.innerHTML = `
+              <td>${item.nome}</td>
+              <td>${new Date(item.horario).toLocaleString('pt-BR')}</td>
+              <td><button onclick="remover(${index})">Remover</button></td>
+            `;
+            corpo.appendChild(linha);
+          });
+        })
+        .catch(err => {
+          console.error("Erro ao carregar dados:", err);
+        });
+    }
+
+    function remover(index) {
+      fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `remover=${index}`
+      })
+      .then(() => carregarPedidos())
+      .catch(err => {
+        alert("Erro ao remover registro.");
+        console.error(err);
+      });
+    }
+
+    carregarPedidos();
+    setInterval(carregarPedidos, 15000);
+  </script>
+</body>
+</html>
